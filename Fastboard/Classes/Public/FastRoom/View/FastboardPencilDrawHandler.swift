@@ -37,6 +37,7 @@ class FastboardPencilDrawHandler: NSObject {
     }
     
     init(room: WhiteRoom?, drawOnlyPencil: Bool) {
+        /// 顺序是不是存在问题？
         self.drawOnlyPencil = drawOnlyPencil
         super.init()
         self.room = room

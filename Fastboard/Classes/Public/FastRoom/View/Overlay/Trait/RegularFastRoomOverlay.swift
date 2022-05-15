@@ -56,6 +56,8 @@ public class RegularFastRoomOverlay: NSObject, FastRoomOverlay, FastPanelDelegat
         func isCurrentEraser() -> Bool {
             currentAppliance.identifier?.contains(identifierFor(appliance: .ApplianceEraser, withShapeKey: nil)) ?? false
         }
+        
+        /// subPanel 是一个 bool 的话，理解应该是 showSubPanel，而不是 with，with 没有含义
         func active(item: FastRoomOperationItem, withSubPanel: Bool) {
             func performSub(_ sub: SubOpsItem) {
                 sub.onClick(sub.associatedView as! UIButton)

@@ -29,6 +29,7 @@ public class CompactFastRoomOverlay: NSObject, FastRoomOverlay, FastPanelDelegat
         }
     }
     
+    /// 两个 update Update 是不是重复了
     public func updateRoomPhaseUpdate(_ phase: FastRoomPhase) {
         guard CompactFastRoomOverlay.showActivityIndicatorWhenReconnecting else { return }
         switch phase {
@@ -69,6 +70,7 @@ public class CompactFastRoomOverlay: NSObject, FastRoomOverlay, FastPanelDelegat
     }
     
     public func updateBoxState(_ state: WhiteWindowBoxState?) {
+        /// 空方法没必要 return
         return
     }
     
@@ -77,6 +79,9 @@ public class CompactFastRoomOverlay: NSObject, FastRoomOverlay, FastPanelDelegat
     var operationRightConstraint: NSLayoutConstraint?
     
     public func setupWith(room: WhiteRoom, fastboardView: FastRoomView, direction: OperationBarDirection) {
+        
+        // 这部分代码写起来犯困，初始化后，组建一个array，然后 forEach addSubview，forEach 调用 translatesAutoresizingMaskIntoConstraints
+        // NSLayoutConstraint 的添加和配置也类似
         let colorView = colorAndStrokePanel.setup(room: room)
         let operationView = operationPanel.setup(room: room)
         let deleteView = deleteSelectionPanel.setup(room: room)
@@ -84,68 +89,44 @@ public class CompactFastRoomOverlay: NSObject, FastRoomOverlay, FastPanelDelegat
                                                direction: .horizontal)
         let sceneView = scenePanel.setup(room: room,
                                          direction: .horizontal)
-        fastboardView.addSubview(colorView)
-        fastboardView.addSubview(operationView)
-        fastboardView.addSubview(deleteView)
-        fastboardView.addSubview(undoRedoView)
-        fastboardView.addSubview(sceneView)
+        let subviews = [colorView, operationView, deleteView, undoRedoView, sceneView]
+        subviews.forEach { v in
+            fastboardView.addSubview(v)
+            v.translatesAutoresizingMaskIntoConstraints = false
+        }
         
         let margin: CGFloat = 8
         
         operationLeftConstraint = operationView.leftAnchor.constraint(equalTo: fastboardView.whiteboardView.leftAnchor, constant: margin)
         operationRightConstraint = operationView.rightAnchor.constraint(equalTo: fastboardView.whiteboardView.rightAnchor, constant: -margin)
         let operationC0 = operationView.centerYAnchor.constraint(equalTo: fastboardView.whiteboardView.centerYAnchor)
-        operationC0.isActive = true
-        operationView.translatesAutoresizingMaskIntoConstraints = false
         
         let colorC0 = colorView.rightAnchor.constraint(equalTo: operationView.rightAnchor)
-        colorC0.isActive = true
         let colorC1 = colorView.bottomAnchor.constraint(equalTo: operationView.topAnchor, constant: -margin)
-        colorC1.isActive = true
-        colorView.translatesAutoresizingMaskIntoConstraints = false
         
         let deleteC0 = deleteView.rightAnchor.constraint(equalTo: colorView.rightAnchor)
-        deleteC0.isActive = true
         let deleteC1 = deleteView.bottomAnchor.constraint(equalTo: colorView.bottomAnchor)
-        deleteC1.isActive = true
-        deleteView.translatesAutoresizingMaskIntoConstraints = false
         
         let undoRedoC0 = undoRedoView.leftAnchor.constraint(equalTo: fastboardView.whiteboardView.leftAnchor, constant: margin)
-        undoRedoC0.isActive = true
         let undoRedoC1 = undoRedoView.bottomAnchor.constraint(equalTo: fastboardView.whiteboardView.bottomAnchor, constant: -margin)
-        undoRedoC1.isActive = true
-        undoRedoView.translatesAutoresizingMaskIntoConstraints = false
         
         let sceneC0 = sceneView.centerXAnchor.constraint(equalTo: fastboardView.whiteboardView.centerXAnchor)
-        sceneC0.isActive = true
         let sceneC1 = sceneView.bottomAnchor.constraint(equalTo: fastboardView.whiteboardView.bottomAnchor, constant: -margin)
-        sceneC1.isActive = true
-        sceneView.translatesAutoresizingMaskIntoConstraints = false
         
-        allConstraints.append(operationLeftConstraint!)
-        allConstraints.append(operationRightConstraint!)
-        allConstraints.append(operationC0)
-        allConstraints.append(colorC0)
-        allConstraints.append(colorC1)
-        allConstraints.append(deleteC0)
-        allConstraints.append(deleteC1)
-        allConstraints.append(undoRedoC0)
-        allConstraints.append(undoRedoC1)
-        allConstraints.append(sceneC0)
-        allConstraints.append(sceneC1)
+        let baseConstraints = [operationLeftConstraint!, operationRightConstraint!, operationC0, colorC0, colorC1, deleteC0, deleteC1, undoRedoC0, undoRedoC1, sceneC0, sceneC1]
+        baseConstraints.forEach { c in
+            c.isActive = true
+        }
+        
+        allConstraints.append(contentsOf: baseConstraints)
         
         updateControlBarLayout(direction: direction)
     }
     
     public func updateControlBarLayout(direction: OperationBarDirection) {
         let isLeft = direction == .left
-        if isLeft {
-            operationLeftConstraint?.isActive = true
-            operationRightConstraint?.isActive = false
-        } else {
-            operationLeftConstraint?.isActive = false
-            operationRightConstraint?.isActive = true
-        }
+        operationLeftConstraint?.isActive = isLeft
+        operationRightConstraint?.isActive = !isLeft
     }
     
     public func updateUIWithInitAppliance(_ appliance: WhiteApplianceNameKey?, shape: WhiteApplianceShapeTypeKey?) {
@@ -186,10 +167,12 @@ public class CompactFastRoomOverlay: NSObject, FastRoomOverlay, FastPanelDelegat
         }
     }
     
+    /// Enable 重复
     public func updateUndoEnable(_ enable: Bool) {
         undoRedoPanel.items.first(where: { $0.identifier == FastRoomDefaultOperationIdentifier.operationType(.undo)!.identifier })?.setEnable(enable)
     }
     
+    /// Enable 重复
     public func updateRedoEnable(_ enable: Bool) {
         undoRedoPanel.items.first(where: { $0.identifier == FastRoomDefaultOperationIdentifier.operationType(.redo)!.identifier })?.setEnable(enable)
     }
@@ -207,10 +190,12 @@ public class CompactFastRoomOverlay: NSObject, FastRoomOverlay, FastPanelDelegat
         }
     }
     
+    /// Hide 重复
     public func setPanelItemHide(item: FastRoomDefaultOperationIdentifier, hide: Bool) {
         panels.values.forEach { $0.setItemHide(fromKey: item, hide: hide)}
     }
     
+    ///  没看懂这个方法名
     public func itemWillBeExecution(fastPanel: FastRoomPanel, item: FastRoomOperationItem) {
         if item is SubOpsItem {
             // Hide all the other subPanels
@@ -249,6 +234,7 @@ public class CompactFastRoomOverlay: NSObject, FastRoomOverlay, FastPanelDelegat
         case hideColorAndDelete
     }
     
+    /// 把 optionSet 切换成 enum 么？
     func updateDisplayStyleFromNewOperationItem(_ item: FastRoomOperationItem) {
         if !item.needColor, !item.needDelete {
             displayStyle = .hideColorAndDelete

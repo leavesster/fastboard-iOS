@@ -131,6 +131,7 @@ public class FastRoomDefaultOperationItem: NSObject {
     }
 }
 
+/// 没见过第二个参数带 with 的 API 命名
 func identifierFor(appliance: WhiteApplianceNameKey, withShapeKey shape: WhiteApplianceShapeTypeKey?) -> String {
     FastRoomDefaultOperationIdentifier.applice(key: appliance, shape: shape).identifier
 }

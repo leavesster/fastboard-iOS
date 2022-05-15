@@ -39,6 +39,7 @@ public class FastRoomControlBar: UIView {
     var forceHideButtons: [UIButton] = []
     
     public
+    /// 感觉命名有 hide，参数有 hide，有点奇怪
     func forceButtonHide(_ button: UIButton, hide: Bool) {
         if hide, !forceHideButtons.contains(button) {
             forceHideButtons.append(button)
@@ -115,6 +116,7 @@ public class FastRoomControlBar: UIView {
         }
     }
     
+    ///怎么感觉突然画风突变，缩进变成了 Java 味了？
     public init(direction: NSLayoutConstraint.Axis,
          borderMask: CACornerMask,
          views: [UIView]) {
